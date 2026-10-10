@@ -52,7 +52,8 @@ targets:
     sources:
       - path: Sources/Timeato
         # bin/release-macos uses ExportOptions.plist. It is not a resource.
-        excludes: ["ExportOptions.plist"]
+        # The entitlements file is a build setting. It is not a resource.
+        excludes: ["ExportOptions.plist", "Timeato.entitlements"]
       # The app icon is an Icon Composer file. Xcode compiles it into
       # Assets.car.
       - path: AppIcon.icon
@@ -69,11 +70,16 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
         # Xcode merges the keys in this file with the generated keys. The
-        # Sparkle settings (SUFeedURL, SUPublicEDKey) are in this file.
+        # Sparkle settings (SUFeedURL, SUPublicEDKey, and the sandbox keys)
+        # are in this file.
         INFOPLIST_FILE: Sources/Timeato/Info.plist
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Timeato
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        # The app runs in the App Sandbox. Sparkle uses its XPC services for
+        # the download and the install.
+        # See https://sparkle-project.org/documentation/sandboxing/
+        CODE_SIGN_ENTITLEMENTS: Sources/Timeato/Timeato.entitlements
     scheme:
       testTargets:
         - TimeatoTests

@@ -8,6 +8,10 @@
 	<string>Copyright © 2026 Mike Skalnik</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
+	<key>SUEnableDownloaderService</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/skalnik/timeato/main/appcast.xml</string>
 	<key>SUPublicEDKey</key>
