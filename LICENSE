@@ -24,6 +24,7 @@ This license does not cover the tomato icons in these folders:
 
 - Sources/Timeato/Assets.xcassets/Tomato.imageset/
 - Sources/Timeato/Assets.xcassets/CoolTomato.imageset/
+- AppIcon.icon/
 
 The icons have their own license. See the "License" and "Credits" sections
 of README.md.

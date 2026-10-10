@@ -1,0 +1,102 @@
+{
+  "features" : [
+    "refractivity",
+    "specular-location"
+  ],
+  "fill" : {
+    "linear-gradient" : [
+      "extended-srgb:1.00000,0.96471,0.89804,1.00000",
+      "extended-srgb:0.98431,0.88627,0.71373,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
+  },
+  "groups" : [
+    {
+      "blur-material" : 0.5,
+      "hidden" : false,
+      "layers" : [
+        {
+          "fill" : {
+            "automatic-gradient" : "extended-srgb:0.23529,0.60392,0.24706,1.00000"
+          },
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "calyx.svg",
+          "name" : "calyx",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              1,
+              -24
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Calyx",
+      "refractivity" : {
+        "depth" : 1,
+        "enabled" : true,
+        "strength" : 0
+      },
+      "shadow" : {
+        "kind" : "none",
+        "opacity" : 0.5
+      },
+      "specular" : "inside",
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "blur-material" : 0.5,
+      "layers" : [
+        {
+          "fill" : {
+            "automatic-gradient" : "extended-srgb:0.87843,0.20784,0.16863,1.00000"
+          },
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "body.svg",
+          "name" : "body",
+          "opacity" : 1,
+          "position" : {
+            "scale" : 1.05,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "name" : "Body",
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : false,
+        "strength" : 0.121484375
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}

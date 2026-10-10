@@ -29,7 +29,7 @@ make test
 
 The code is available under the MIT License. See [LICENSE](LICENSE).
 
-The MIT License does not cover the two tomato icons. The icons have their
+The MIT License does not cover the three tomato icons. The icons have their
 own license. See the credits below.
 
 ## Credits
@@ -38,9 +38,9 @@ The work icon is "Tomato" by Hana from the Noun Project,
 https://thenounproject.com/icon/tomato-4597030/.
 
 The break icon is a changed version of the same icon. It's got
-sunglasses now.
+sunglasses now. The app icon is also based upon it, but colorized.
 
-Both icons use the Creative Commons Attribution 3.0 license
+All of these icons use the Creative Commons Attribution 3.0 license
 (https://creativecommons.org/licenses/by/3.0/).
 
 Updates use [Sparkle](https://github.com/sparkle-project/Sparkle). Sparkle
