@@ -11,3 +11,7 @@ xcuserdata/
 # macOS
 .DS_Store
 
+# XcodeGen makes the Xcode project from project.yml. Do not track it.
+# Package.resolved is the lock file for the Swift packages. Keep it.
+Timeato.xcodeproj/**/*
+!Timeato.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

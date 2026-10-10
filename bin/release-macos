@@ -1,0 +1,101 @@
+#!/bin/bash
+# Archives the macOS app, signs it with the Developer ID certificate,
+# notarizes it, puts it on a GitHub release, and pushes the new appcast.xml
+# to main. Sparkle reads appcast.xml from main.
+# Usage: bin/release-macos
+#
+# The version comes from project.yml. Run 'make bump' before each release.
+#
+# One-time setup:
+#   The private Sparkle key in the 1Password document "Timeato sparkle key".
+#   The Developer ID Application certificate in the login Keychain.
+#   The notarization credentials: xcrun notarytool store-credentials timeato
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+REPO="skalnik/timeato"
+TEAM_ID="5R3XW76G52"
+
+BUILD="build/release"
+PACKAGES="build/SourcePackages"
+SPARKLE_BIN="${PACKAGES}/artifacts/sparkle/Sparkle/bin"
+ARCHIVE="${BUILD}/Timeato.xcarchive"
+APP="${BUILD}/export/Timeato.app"
+UPDATES="${BUILD}/updates"
+
+VERSION=$(sed -n -E '/^ *MARKETING_VERSION:/{s/^ *MARKETING_VERSION: *"?([^"]*)"? *$/\1/p;q;}' project.yml)
+if [[ ! "$VERSION" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$ ]]; then
+	echo "Could not read the version from project.yml: ${VERSION}" >&2
+	exit 1
+fi
+TAG="v${VERSION}"
+ZIP="${UPDATES}/Timeato-${VERSION}.zip"
+
+if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+	echo "Release ${TAG} exists. Run 'make bump' first." >&2
+	exit 1
+fi
+
+# Get the private key before the build, so that a problem stops the script
+# early. The key stays in a shell variable. The script does not write it to
+# a file.
+if ! command -v op >/dev/null 2>&1; then
+	echo "The 1Password CLI (op) is not installed." >&2
+	echo "Install it from https://developer.1password.com/docs/cli/" >&2
+	exit 1
+fi
+if ! SPARKLE_KEY=$(op document get "Timeato sparkle key") || [[ -z "$SPARKLE_KEY" ]]; then
+	echo "Could not get the Sparkle key from 1Password." >&2
+	exit 1
+fi
+
+rm -rf "$BUILD"
+mkdir -p "$UPDATES"
+
+xcodegen generate
+
+# Notarization needs the hardened runtime.
+xcodebuild archive \
+	-project Timeato.xcodeproj -scheme Timeato \
+	-destination "generic/platform=macOS" -archivePath "$ARCHIVE" \
+	-clonedSourcePackagesDirPath "$PACKAGES" -allowProvisioningUpdates \
+	DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+	CODE_SIGN_IDENTITY="Apple Development" ENABLE_HARDENED_RUNTIME=YES
+
+# The export signs the app with the Developer ID certificate.
+xcodebuild -exportArchive \
+	-archivePath "$ARCHIVE" -exportPath "${BUILD}/export" \
+	-exportOptionsPlist Sources/Timeato/ExportOptions.plist -allowProvisioningUpdates
+
+# stapler fails when Apple did not accept the upload, so it is the check for
+# the notarization result.
+ditto -c -k --keepParent "$APP" "${BUILD}/notarize.zip"
+xcrun notarytool submit "${BUILD}/notarize.zip" --keychain-profile timeato --wait
+xcrun stapler staple "$APP"
+
+# ditto keeps the symbolic links in the frameworks. Other tools can break
+# the code signature. See https://sparkle-project.org/documentation/publishing/
+ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
+
+# generate_appcast signs the zip file with the private EdDSA key. With
+# "--ed-key-file -" it reads the key from standard input. printf is a shell
+# builtin, so the key does not show in the process list.
+cp appcast.xml "${UPDATES}/appcast.xml"
+printf '%s\n' "$SPARKLE_KEY" | "${SPARKLE_BIN}/generate_appcast" --ed-key-file - \
+	--download-url-prefix "https://github.com/${REPO}/releases/download/${TAG}/" \
+	"$UPDATES"
+cp "${UPDATES}/appcast.xml" appcast.xml
+
+jj commit -m "Release ${VERSION} 🚀" project.yml appcast.xml
+RELEASE_COMMIT=$(jj log -r @- --no-graph -T commit_id)
+
+gh release create "$TAG" "$ZIP" --repo "$REPO" --draft --title "${VERSION}" --generate-notes
+
+jj bookmark set main -r @-
+jj git push --bookmark main
+
+gh release edit "$TAG" --repo "$REPO" --draft=false --target "$RELEASE_COMMIT"
+
+echo "Released ${TAG}."

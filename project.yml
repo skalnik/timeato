@@ -1,9 +1,16 @@
 name: Timeato
+
 options:
   bundleIdPrefix: com.skalnik
   deploymentTarget:
     macOS: "27.0"
   createIntermediateGroups: true
+  minimumXcodeGenVersion: "2.42.0"
+packages:
+  # Sparkle checks for app updates. See https://sparkle-project.org/documentation/
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.10.0
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -43,16 +50,28 @@ targets:
     type: application
     platform: macOS
     sources:
-      - Sources/Timeato
+      - path: Sources/Timeato
+        # bin/release-macos uses ExportOptions.plist. It is not a resource.
+        excludes: ["ExportOptions.plist"]
+      # The app icon is an Icon Composer file. Xcode compiles it into
+      # Assets.car.
+      - path: AppIcon.icon
+        type: file
+        buildPhase: resources
     dependencies:
       - target: TimeatoKit
       - target: TimeatoCore
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.skalnik.timeato
         PRODUCT_NAME: Timeato
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+        # Xcode merges the keys in this file with the generated keys. The
+        # Sparkle settings (SUFeedURL, SUPublicEDKey) are in this file.
+        INFOPLIST_FILE: Sources/Timeato/Info.plist
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_CFBundleDisplayName: Timeato
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
     scheme:
@@ -64,9 +83,17 @@ targets:
     sources:
       - Tests/TimeatoTests
     dependencies:
+      # UpdaterConfigTests reads the Info.plist of the built app. The tests
+      # do not run in the app.
+      - target: Timeato
+        link: false
       - target: TimeatoKit
       - target: TimeatoCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.skalnik.timeato.tests
         GENERATE_INFOPLIST_FILE: YES
+        # XcodeGen sets a test host when a test target depends on an app.
+        # These empty values remove it.
+        BUNDLE_LOADER: ""
+        TEST_HOST: ""

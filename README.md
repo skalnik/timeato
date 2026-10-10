@@ -7,25 +7,23 @@ A pomodoro timer for macOS that I don't hate.
 You need Xcode and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 ```sh
-xcodegen generate
-xcodebuild -scheme Timeato -configuration Release build
-```
-
-You can also open `Timeato.xcodeproj` in Xcode.
-
-The script `scripts/build.sh` does these steps. It puts the output in
-`build/DerivedData` and prints the path of the app:
-
-```sh
-scripts/build.sh
+brew install xcodegen
+make build
 ```
 
 ## Test
 
 ```sh
-xcodebuild test -scheme Timeato -destination 'platform=macOS' \
-  -derivedDataPath build/DerivedData
+make test
 ```
+
+## Release
+
+1. `make bump`. This sets the version to the date (YYYY.MM.DD) and the
+   build number to the time (YYYYMMDDHHMM) in `project.yml`.
+2. `make release`. This archives and signs the app, adds the release
+   to `appcast.xml`, commits the release, makes the GitHub release, and
+   pushes `main`.
 
 ## License
 
@@ -44,3 +42,7 @@ sunglasses now.
 
 Both icons use the Creative Commons Attribution 3.0 license
 (https://creativecommons.org/licenses/by/3.0/).
+
+Updates use [Sparkle](https://github.com/sparkle-project/Sparkle). Sparkle
+uses the MIT License
+(https://github.com/sparkle-project/Sparkle/blob/2.x/LICENSE).
