@@ -11,6 +11,16 @@ brew install xcodegen
 make build
 ```
 
+There are two app targets:
+
+- `Timeato` is the direct download. It gets updates from Sparkle.
+- `Timeato-AppStore` is the Mac App Store app. It does not contain
+  Sparkle, because the App Store gives the updates. Build it with
+  `make build-appstore`.
+
+The two targets share the code in `Sources/Timeato`. The files that are
+different for each target are in `Sources/Direct` and `Sources/AppStore`.
+
 ## Test
 
 ```sh
@@ -43,6 +53,6 @@ sunglasses now. The app icon is also based upon it, but colorized.
 All of these icons use the Creative Commons Attribution 3.0 license
 (https://creativecommons.org/licenses/by/3.0/).
 
-Updates use [Sparkle](https://github.com/sparkle-project/Sparkle). Sparkle
+Updates of the direct download use [Sparkle](https://github.com/sparkle-project/Sparkle). Sparkle
 uses the MIT License
 (https://github.com/sparkle-project/Sparkle/blob/2.x/LICENSE).

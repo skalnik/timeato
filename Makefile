@@ -1,6 +1,9 @@
 PROJECT := Timeato.xcodeproj
 SCHEME := Timeato
+APPSTORE_SCHEME := Timeato-AppStore
 APP := Timeato.app
+# Debug builds of the App Store app have a different name. See project.yml.
+APPSTORE_APP := Timeato App Store.app
 DESTINATION := platform=macOS
 BUILD_DIR := build
 
@@ -21,6 +24,12 @@ build: generate ## Build the app
 		-project "$(PROJECT)" -scheme "$(SCHEME)" \
 		-destination "$(DESTINATION)" -configuration Debug $(FORMAT)
 
+.PHONY: build-appstore
+build-appstore: generate ## Build the Mac App Store app, without Sparkle
+	set -o pipefail; xcodebuild build \
+		-project "$(PROJECT)" -scheme "$(APPSTORE_SCHEME)" \
+		-destination "$(DESTINATION)" -configuration Debug $(FORMAT)
+
 .PHONY: test
 test: generate ## Run the unit tests
 	set -o pipefail; xcodebuild test \
@@ -35,6 +44,15 @@ run: build ## Build and start the app
 		| awk -F' = ' '/ BUILT_PRODUCTS_DIR/ {print $$2; exit}'); \
 	test -n "$$dir"; \
 	open "$$dir/$(APP)"
+
+.PHONY: run-appstore
+run-appstore: build-appstore ## Build and start the Mac App Store app
+	@set -e -o pipefail; \
+	dir=$$(xcodebuild -project "$(PROJECT)" -scheme "$(APPSTORE_SCHEME)" \
+		-destination "$(DESTINATION)" -configuration Debug -showBuildSettings \
+		| awk -F' = ' '/ BUILT_PRODUCTS_DIR/ {print $$2; exit}'); \
+	test -n "$$dir"; \
+	open "$$dir/$(APPSTORE_APP)"
 
 .PHONY: archive
 archive: generate ## Make an archive in build/

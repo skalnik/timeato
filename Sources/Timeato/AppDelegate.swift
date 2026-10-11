@@ -7,6 +7,9 @@ import TimeatoKit
 /// Timeato does the same.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    /// When this value is nil, the app does not check for updates itself.
-    let updateProvider: (any UpdateProvider)? = SparkleUpdateProvider()
+    /// Each app target has its own makeUpdateProvider function. The direct
+    /// target has it in Sources/Direct. The App Store target has it in
+    /// Sources/AppStore. When this value is nil, the app does not check for
+    /// updates itself.
+    let updateProvider: (any UpdateProvider)? = makeUpdateProvider()
 }

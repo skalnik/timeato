@@ -67,7 +67,7 @@ xcodebuild archive \
 # The export signs the app with the Developer ID certificate.
 xcodebuild -exportArchive \
 	-archivePath "$ARCHIVE" -exportPath "${BUILD}/export" \
-	-exportOptionsPlist Sources/Timeato/ExportOptions.plist -allowProvisioningUpdates
+	-exportOptionsPlist Sources/Direct/ExportOptions.plist -allowProvisioningUpdates
 
 # stapler fails when Apple did not accept the upload, so it is the check for
 # the notarization result.

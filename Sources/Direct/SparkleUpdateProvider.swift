@@ -57,3 +57,9 @@ final class SparkleUpdateProvider: UpdateProvider {
 final class GentleUserDriverDelegate: NSObject, SPUStandardUserDriverDelegate {
     var supportsGentleScheduledUpdateReminders: Bool { true }
 }
+
+/// The direct download gets its updates from Sparkle.
+@MainActor
+func makeUpdateProvider() -> (any UpdateProvider)? {
+    SparkleUpdateProvider()
+}

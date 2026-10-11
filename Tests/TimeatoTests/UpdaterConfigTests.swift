@@ -1,33 +1,14 @@
 import XCTest
 import TimeatoKit
 
-/// Checks the Sparkle settings in the Info.plist of the app, and the
+/// Checks the Sparkle settings in the Info.plist of the direct app, and the
 /// sandbox entitlements in its code signature.
-///
-/// The tests do not run in the app. Xcode puts the app and the test bundle
-/// in the same products folder. Thus the tests read the Info.plist of the
-/// app from there.
 final class UpdaterConfigTests: XCTestCase {
-    private var appURL: URL!
-    private var info: [String: Any] = [:]
+    private var app: BuiltApp!
+    private var info: [String: Any] { app.info }
 
     override func setUpWithError() throws {
-        let products = Bundle(for: Self.self).bundleURL.deletingLastPathComponent()
-        appURL = products.appendingPathComponent("Timeato.app")
-        let app = try XCTUnwrap(Bundle(url: appURL))
-        info = try XCTUnwrap(app.infoDictionary)
-    }
-
-    /// Reads the entitlements from the code signature of the app.
-    /// See https://developer.apple.com/documentation/security/seccodecopysigninginformation(_:_:_:)
-    private func entitlements() throws -> [String: Any] {
-        var code: SecStaticCode?
-        XCTAssertEqual(SecStaticCodeCreateWithPath(appURL as CFURL, [], &code), errSecSuccess)
-        var signing: CFDictionary?
-        let flags = SecCSFlags(rawValue: kSecCSSigningInformation)
-        XCTAssertEqual(SecCodeCopySigningInformation(try XCTUnwrap(code), flags, &signing), errSecSuccess)
-        let dictionary = try XCTUnwrap(signing as? [String: Any])
-        return try XCTUnwrap(dictionary[kSecCodeInfoEntitlementsDict as String] as? [String: Any])
+        app = try BuiltApp(named: "Timeato")
     }
 
     func testFeedIsHTTPS() throws {
@@ -66,14 +47,14 @@ final class UpdaterConfigTests: XCTestCase {
     }
 
     func testAppIsSandboxed() throws {
-        let entitlements = try entitlements()
+        let entitlements = try app.entitlements()
         XCTAssertEqual(entitlements["com.apple.security.app-sandbox"] as? Bool, true)
         XCTAssertNil(entitlements["com.apple.security.network.client"])
     }
 
     func testSparkleMachServicesUseTheBundleIdentifier() throws {
         let key = "com.apple.security.temporary-exception.mach-lookup.global-name"
-        let names = try XCTUnwrap(entitlements()[key] as? [String])
+        let names = try XCTUnwrap(app.entitlements()[key] as? [String])
         // Debug builds also get Mach services for the test runner. The
         // archive export removes them.
         XCTAssertTrue(Set(names).isSuperset(of: ["com.skalnik.timeato-spks", "com.skalnik.timeato-spki"]))

@@ -23,6 +23,32 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRICT_CONCURRENCY: complete
     DEAD_CODE_STRIPPING: YES
+targetTemplates:
+  # The settings that the direct target and the App Store target share.
+  # XcodeGen appends the sources and dependencies of each target to these.
+  # See https://github.com/yonaskolb/XcodeGen/blob/master/Docs/ProjectSpec.md#target-template
+  App:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/Timeato
+      # The app icon is an Icon Composer file. Xcode compiles it into
+      # Assets.car.
+      - path: AppIcon.icon
+        type: file
+        buildPhase: resources
+    dependencies:
+      - target: TimeatoKit
+      - target: TimeatoCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.skalnik.timeato
+        PRODUCT_NAME: Timeato
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Timeato
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
 targets:
   TimeatoCore:
     type: framework
@@ -47,51 +73,56 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         SKIP_INSTALL: YES
   Timeato:
-    type: application
-    platform: macOS
+    templates: [App]
     sources:
-      - path: Sources/Timeato
-        # bin/release-macos uses ExportOptions.plist. It is not a resource.
-        # The entitlements file is a build setting. It is not a resource.
-        excludes: ["ExportOptions.plist", "Timeato.entitlements"]
-      # The app icon is an Icon Composer file. Xcode compiles it into
-      # Assets.car.
-      - path: AppIcon.icon
-        type: file
-        buildPhase: resources
+      - path: Sources/Direct
+        # bin/release-macos uses ExportOptions.plist. The entitlements file
+        # and Info.plist are build settings. They are not resources.
+        excludes: ["ExportOptions.plist", "Timeato.entitlements", "Info.plist"]
     dependencies:
-      - target: TimeatoKit
-      - target: TimeatoCore
       - package: Sparkle
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.skalnik.timeato
-        PRODUCT_NAME: Timeato
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
         # Xcode merges the keys in this file with the generated keys. The
         # Sparkle settings (SUFeedURL, SUPublicEDKey, and the sandbox keys)
         # are in this file.
-        INFOPLIST_FILE: Sources/Timeato/Info.plist
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Timeato
-        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
-        # The app runs in the App Sandbox. Sparkle uses its XPC services for
-        # the download and the install.
+        INFOPLIST_FILE: Sources/Direct/Info.plist
+        # Sparkle uses its XPC services for the download and the install.
+        # The entitlements let the app talk to the installer.
         # See https://sparkle-project.org/documentation/sandboxing/
-        CODE_SIGN_ENTITLEMENTS: Sources/Timeato/Timeato.entitlements
+        CODE_SIGN_ENTITLEMENTS: Sources/Direct/Timeato.entitlements
     scheme:
       testTargets:
         - TimeatoTests
+  # The Mac App Store build. It does not contain Sparkle. The App Store gives
+  # the updates.
+  Timeato-AppStore:
+    templates: [App]
+    sources:
+      - path: Sources/AppStore
+        excludes: ["ExportOptions.plist", "Timeato.entitlements", "Info.plist"]
+    settings:
+      base:
+        INFOPLIST_FILE: Sources/AppStore/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sources/AppStore/Timeato.entitlements
+      configs:
+        # Debug builds of the two app targets go into the same folder. A
+        # different name keeps the two apps separate there. Archives use
+        # Release, so the App Store gets the name Timeato.
+        Debug:
+          PRODUCT_NAME: Timeato App Store
+    scheme: {}
   TimeatoTests:
     type: bundle.unit-test
     platform: macOS
     sources:
       - Tests/TimeatoTests
     dependencies:
-      # UpdaterConfigTests reads the Info.plist of the built app. The tests
-      # do not run in the app.
+      # UpdaterConfigTests and AppStoreConfigTests read the built apps. The
+      # tests do not run in an app.
       - target: Timeato
+        link: false
+      - target: Timeato-AppStore
         link: false
       - target: TimeatoKit
       - target: TimeatoCore
