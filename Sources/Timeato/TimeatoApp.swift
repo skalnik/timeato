@@ -1,4 +1,3 @@
-import Sparkle
 import SwiftUI
 import TimeatoCore
 import TimeatoKit
@@ -10,7 +9,7 @@ struct TimeatoApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(controller: controller, updater: appDelegate.updaterController.updater)
+            MenuContent(controller: controller, updateProvider: appDelegate.updateProvider)
         } label: {
             MenuBarLabel(controller: controller, ticker: controller.ticker)
         }
@@ -81,9 +80,10 @@ enum PhaseGlyph {
 /// The items in the menu bar menu.
 struct MenuContent: View {
     @ObservedObject var controller: TimerController
-    /// MenuContent does not observe the updater. Only the update button
-    /// observes it.
-    let updater: SPUUpdater
+    /// MenuContent does not observe the update provider. Only the update
+    /// button observes it. When this value is nil, the menu has no update
+    /// item.
+    let updateProvider: (any UpdateProvider)?
 
     var body: some View {
         // In a menu, the label image shows in the image column of the item.
@@ -130,7 +130,9 @@ struct MenuContent: View {
 
         Divider()
 
-        CheckForUpdatesButton(updater: updater)
+        if let updateProvider {
+            CheckForUpdatesButton(provider: updateProvider)
+        }
 
         Button("Quit Timeato") { controller.quit() }
             .keyboardShortcut("q")
