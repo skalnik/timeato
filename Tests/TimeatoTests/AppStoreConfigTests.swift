@@ -21,6 +21,10 @@ final class AppStoreConfigTests: XCTestCase {
         XCTAssertEqual(sparkleKeys, [])
     }
 
+    func testDeclaresNoNonExemptEncryption() {
+        XCTAssertEqual(app.info["ITSAppUsesNonExemptEncryption"] as? Bool, false)
+    }
+
     func testIsSandboxedWithoutExceptions() throws {
         let entitlements = try app.entitlements()
         XCTAssertEqual(entitlements["com.apple.security.app-sandbox"] as? Bool, true)
