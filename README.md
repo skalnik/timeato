@@ -43,8 +43,8 @@ make test
 
 The code is available under the MIT License. See [LICENSE](LICENSE).
 
-The MIT License does not cover the three tomato icons. The icons have their
-own license. See the credits below.
+The MIT License does not cover the three tomato icons. See the credits
+below.
 
 ## Credits
 
@@ -54,7 +54,11 @@ https://thenounproject.com/icon/tomato-4597030/.
 The break icon is a changed version of the same icon. It's got
 sunglasses now. The app icon is also based upon it, but colorized.
 
-All of these icons use the Creative Commons Attribution 3.0 license
+I use these icons with a Royalty-Free License from the Noun Project
+(https://thenounproject.com/pricing). This license does not require
+attribution, but the credit stays here. The license is for me only. It
+does not let other persons use the icons. The icon is also available
+under the Creative Commons Attribution 3.0 license
 (https://creativecommons.org/licenses/by/3.0/).
 
 Updates of the direct download use [Sparkle](https://github.com/sparkle-project/Sparkle). Sparkle
