@@ -65,6 +65,10 @@ archive: generate ## Make an archive in build/
 release: ## Sign and notarize the app, make a GitHub release, and push appcast.xml
 	bin/release-macos
 
+.PHONY: release-appstore
+release-appstore: ## Archive the Mac App Store app and upload it to App Store Connect
+	bin/release-appstore
+
 .PHONY: bump
 bump: ## Set the version to today's date and the build number to the time
 	bin/bump-version

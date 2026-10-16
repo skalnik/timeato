@@ -34,6 +34,10 @@ make test
 2. `make release`. This archives and signs the app, adds the release
    to `appcast.xml`, commits the release, makes the GitHub release, and
    pushes `main`.
+3. `make release-appstore`. This archives the Mac App Store app and
+   uploads it to App Store Connect. Then submit the build for review in
+   App Store Connect. The upload uses the Apple developer account in
+   Xcode > Settings > Accounts.
 
 ## License
 

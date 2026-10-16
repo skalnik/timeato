@@ -1,0 +1,58 @@
+#!/bin/bash
+# Archives the Mac App Store app and uploads it to App Store Connect.
+# Usage: bin/release-appstore
+#
+# The version comes from project.yml. Run 'make bump' before each release.
+# The App Store app and the direct download can use the same version.
+#
+# This script does not submit the build for review. After the upload, select
+# the build in App Store Connect and submit it there.
+#
+# One-time setup:
+#   Sign in to your Apple developer account in Xcode > Settings > Accounts.
+#     The upload uses this account.
+#   Make the app record for com.skalnik.timeato in App Store Connect.
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+TEAM_ID="5R3XW76G52"
+
+BUILD="build/appstore"
+PACKAGES="build/SourcePackages"
+ARCHIVE="${BUILD}/Timeato.xcarchive"
+
+VERSION=$(sed -n -E '/^ *MARKETING_VERSION:/{s/^ *MARKETING_VERSION: *"?([^"]*)"? *$/\1/p;q;}' project.yml)
+BUILD_NUMBER=$(sed -n -E '/^ *CURRENT_PROJECT_VERSION:/{s/^ *CURRENT_PROJECT_VERSION: *"?([^"]*)"? *$/\1/p;q;}' project.yml)
+if [[ ! "$VERSION" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$ ]]; then
+	echo "Could not read the version from project.yml: ${VERSION}" >&2
+	exit 1
+fi
+if [[ ! "$BUILD_NUMBER" =~ ^[0-9]{12}$ ]]; then
+	echo "Could not read the build number from project.yml: ${BUILD_NUMBER}" >&2
+	exit 1
+fi
+
+rm -rf "$BUILD"
+mkdir -p "$BUILD"
+
+xcodegen generate
+
+# The archive uses the Release configuration. Thus the app has the name
+# Timeato. The App Store does not need the hardened runtime.
+xcodebuild archive \
+	-project Timeato.xcodeproj -scheme Timeato-AppStore \
+	-destination "generic/platform=macOS" -archivePath "$ARCHIVE" \
+	-clonedSourcePackagesDirPath "$PACKAGES" -allowProvisioningUpdates \
+	DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+	CODE_SIGN_IDENTITY="Apple Development"
+
+# The export signs the app with the Apple Distribution certificate and
+# uploads it. App Store Connect rejects a build number that it has already.
+# Then run 'make bump' and try again.
+xcodebuild -exportArchive \
+	-archivePath "$ARCHIVE" -exportPath "${BUILD}/export" \
+	-exportOptionsPlist Sources/AppStore/ExportOptions.plist -allowProvisioningUpdates
+
+echo "Uploaded ${VERSION} (${BUILD_NUMBER}). Submit it for review in App Store Connect."

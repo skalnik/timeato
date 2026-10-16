@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- bin/release-appstore uses this file. Run "xcodebuild -help" to see
+     all the keys. -->
 <plist version="1.0">
 <dict>
 	<key>method</key>
 	<string>app-store-connect</string>
+	<!-- The export sends the app to App Store Connect. It does not keep a
+	     local copy. -->
+	<key>destination</key>
+	<string>upload</string>
+	<!-- The build number is the time from "make bump". Xcode must not
+	     change it. Then the App Store build and the direct build have the
+	     same number. -->
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
 	<key>signingStyle</key>
 	<string>automatic</string>
 	<key>teamID</key>
